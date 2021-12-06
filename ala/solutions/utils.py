@@ -49,3 +49,10 @@ def read_lines_coords(path: str) -> List[Tuple[Tuple[int, int], Tuple[int, int]]
             lines_coords.append((start_point, end_point))
 
     return lines_coords
+
+
+def read_one_line_int(path: str) -> List[int]:
+    with open(path) as file:
+        numbers = file.readline()
+        numbers = [int(num) for num in numbers.split(',')]
+    return numbers
