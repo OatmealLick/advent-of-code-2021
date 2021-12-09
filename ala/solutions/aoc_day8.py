@@ -17,9 +17,8 @@ class CodeDecoder:
         return simple_digits_in_output
 
 
-
 if __name__ == '__main__':
-    input_path = '../inputs/test_aoc_day8.txt'
+    input_path = '../inputs/aoc_day8.txt'
     codes_list = read_codes(input_path)
 
     cd = CodeDecoder(codes_list)
