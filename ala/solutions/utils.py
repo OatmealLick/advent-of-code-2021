@@ -56,3 +56,23 @@ def read_one_line_int(path: str) -> List[int]:
         numbers = file.readline()
         numbers = [int(num) for num in numbers.split(',')]
     return numbers
+
+
+def read_codes(path: str) -> List[Tuple[List[str], List[str]]]:
+    with open(path) as file:
+        codes = []
+        for line in file.readlines():
+            entry, output = line.split('|')
+            entry, output = entry.split(' '), output.split(' ')
+            entry = [e.strip() for e in entry if len(e.strip()) > 0]
+            output = [o.strip() for o in output if len(o.strip()) > 0]
+            codes.append((entry, output))
+        return codes
+
+
+def read_map(path: str) -> np.ndarray:
+    map = []
+    with open(path) as file:
+        for row in file.readlines():
+            map.append([int(number) for number in row.strip()])
+    return np.array(map)
