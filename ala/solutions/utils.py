@@ -76,3 +76,13 @@ def read_map(path: str) -> np.ndarray:
         for row in file.readlines():
             map.append([int(number) for number in row.strip()])
     return np.array(map)
+
+
+def read_connections(path: str) -> List[Tuple[str, str]]:
+    connections = []
+    with open(path) as file:
+        for row in file.readlines():
+            start_node, end_node = row.strip().split('-')
+            connections.append((start_node, end_node))
+
+    return connections

@@ -1,73 +1,61 @@
-from typing import List, Optional, Tuple
+from itertools import product
 
-from ala.solutions.utils import read_str_input
+import numpy as np
+
+from ala.solutions.utils import read_map
 
 
-class SyntaxErrorDetector:
-    def __init__(self, chunks: List[str]):
-        self.chunks = chunks
-        self.pairs = {
-            '(': ')',
-            '[': ']',
-            '{': '}',
-            '<': '>'
-        }
-        self.scores = {
-            ')': 3,
-            ']': 57,
-            '}': 1197,
-            '>': 25137
-        }
-        self.filling_scores = {
-            ')': 1,
-            ']': 2,
-            '}': 3,
-            '>': 4
-        }
+class RiskFinder:
+    def __init__(self, risk_map: np.ndarray):
+        self.risk_map = np.pad(risk_map, 1, 'constant', constant_values=9)
+        self.check_array = np.zeros(self.risk_map.shape)
 
-    def find_syntax_error_score(self):
-        score = 0
-        for line in self.chunks:
-            invalid_chunk, _ = self.find_first_invalid_chunk(line)
-            if invalid_chunk:
-                score += self.scores[invalid_chunk]
-        return score
+    def find_risk_level(self):
+        valleys_sum = 0
+        x_positions, y_positions = self.risk_map.shape
+        for x, y in product(range(1, x_positions), range(1, y_positions)):
+            context = self.risk_map[x - 1:x + 2, y - 1:y + 2]
+            if len(np.unique(context)) > 1 and np.min(context) == self.risk_map[x, y]:
+                valleys_sum += self.risk_map[x, y] + 1
+        return valleys_sum
 
-    def find_missing_chunks_score(self):
-        scores = []
-        for line in self.chunks:
-            line = line.strip()
-            invalid_chunk, open_opens = self.find_first_invalid_chunk(line)
-            if not invalid_chunk:
-                scores.append(self.find_missing_closes_score(open_opens))
+    def get_basins_sizes(self):
+        x_positions, y_positions = self.risk_map.shape
+        basins_sizes = []
+        for x, y in product(range(1, x_positions), range(1, y_positions)):
+            context = self.risk_map[x - 1:x + 2, y - 1:y + 2]
+            if len(np.unique(context)) > 1 and np.min(context) == self.risk_map[x, y]:
+                basin_size = self._get_basin_size(x, y)
+                basins_sizes.append(basin_size)
 
-        scores.sort()
-        return scores[len(scores) // 2]
+        basins_sizes.sort()
+        return basins_sizes[-1]*basins_sizes[-2]*basins_sizes[-3]
 
-    def find_first_invalid_chunk(self, line) -> Tuple[Optional[str], List[str]]:
-        opens = []
-        for chunk in line:
-            if chunk in self.pairs.keys():
-                opens.append(chunk)
-            if chunk in self.pairs.values():
-                last_open = opens.pop()
-                if self.pairs[last_open] != chunk:
-                    return chunk, opens
-        return None, opens
+    def _get_basin_size(self, x: int, y: int):
+        if self.check_array[x, y]:
+            return 0
 
-    def find_missing_closes_score(self, open_opens):
-        score = 0
-        open_opens.reverse()
-        for open_ in open_opens:
-            score *= 5
-            score += self.filling_scores[self.pairs[open_]]
-        return score
+        if x * y < 0:
+            return 0
+
+        if x + 1 > self.risk_map.shape[0] or y + 1 > self.risk_map.shape[1]:
+            return 0
+
+        self.check_array[x, y] = True
+
+        if self.risk_map[x, y] == 9:
+            return 0
+
+        return 1 + self._get_basin_size(x + 1, y) \
+               + self._get_basin_size(x - 1, y) \
+               + self._get_basin_size(x, y + 1) \
+               + self._get_basin_size(x, y - 1)
 
 
 if __name__ == '__main__':
-    input_path = '../inputs/aoc_day10.txt'
-    chunks = read_str_input(input_path)
+    input_path = '../inputs/aoc_day9.txt'
+    risk_map = read_map(input_path)
 
-    sed = SyntaxErrorDetector(chunks)
-    # print(sed.find_syntax_error_score())
-    print(sed.find_missing_chunks_score())
+    rf = RiskFinder(risk_map)
+    print(rf.find_risk_level())
+    print(rf.get_basins_sizes())
