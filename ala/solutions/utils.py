@@ -86,3 +86,23 @@ def read_connections(path: str) -> List[Tuple[str, str]]:
             connections.append((start_node, end_node))
 
     return connections
+
+
+def read_dots_and_folds(path: str) -> (List[Tuple[int, int]], List[Tuple[str, int]]):
+    coords = []
+    folds = []
+    with open(path) as file:
+        for row in file.readlines():
+            if len(row.strip()) == 0:
+                continue
+            if 'fold' not in row:
+                x_, y_ = row.strip().split(',')
+                coords.append((int(x_), int(y_)))
+            else:
+                if 'y' in row:
+                    y = int(row.strip().split('=')[1])
+                    folds.append(('y', y))
+                if 'x' in row:
+                    x = int(row.strip().split('=')[1])
+                    folds.append(('x', x))
+    return coords, folds
