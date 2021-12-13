@@ -14,5 +14,6 @@ def triangular_number(number):
 
 if __name__ == "__main__":
     with open("input.txt") as f:
+        f.read().splitlines()
         crabs = [int(n) for n in f.read().split(",")]
         calculate_cost_of_alignment(crabs)
