@@ -1,9 +1,10 @@
-from collections import Counter
+import math
+from collections import Counter, defaultdict
 
 
 def main():
-    # filename = "input.txt"
-    filename = "input-sample.txt"
+    filename = "input.txt"
+    # filename = "input-sample.txt"
     with open(filename, "r") as f:
         lines = [line.strip() for line in f.readlines()]
 
@@ -13,25 +14,33 @@ def main():
         parts = [part.strip() for part in line.split("->")]
         rules[parts[0]] = parts[1]
 
+    dict_template = defaultdict(lambda: 0)
     i = 1
-    new_template = template[0:1]
+    while i < len(template):
+        rule_key = template[i - 1] + template[i]
+        dict_template[rule_key] += 1
+        i += 1
+
     steps = 40
     for step in range(steps):
-        while i < len(template):
-            rule_key = template[i - 1] + template[i]
-            rule = rules[rule_key]
-            new_template += rule + template[i]
-            i += 1
-        i = 1
-        cache[template] = new_template
-        template = new_template
-        new_template = template[0:1]
-        # print(f"Template {template}")
-        print(f"Steps {step}")
-    occurrences = Counter(template)
+        new_dict_template = defaultdict(int)
+        for pair, count in dict_template.items():
+            rule = rules[pair]
+            first = pair[0] + rule
+            second = rule + pair[1]
+            new_dict_template[first] += count
+            new_dict_template[second] += count
+        dict_template = new_dict_template
+        print(f"Template {dict_template}, count {sum(dict_template.values())}")
+
+    occurrences = defaultdict(lambda: 0)
+    for pair, count in dict_template.items():
+        for letter in pair:
+            occurrences[letter] += count
+    print(occurrences)
     values = occurrences.values()
-    max_value = max(values)
-    min_value = min(values)
+    max_value = math.ceil(max(values) / 2)
+    min_value = math.ceil(min(values) / 2)
     print(f"Max {max_value}, min: {min_value}")
     print(max_value - min_value)
 
