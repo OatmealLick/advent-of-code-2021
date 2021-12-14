@@ -106,3 +106,26 @@ def read_dots_and_folds(path: str) -> (List[Tuple[int, int]], List[Tuple[str, in
                     x = int(row.strip().split('=')[1])
                     folds.append(('x', x))
     return coords, folds
+
+
+def read_polymer(path: str):
+    with open(path) as file:
+        rules = {}
+
+        polymer_template = file.readline().strip()
+        polymer = {}
+        for pos in range(len(polymer_template)):
+            pair = polymer_template[pos:pos + 2]
+            if len(pair) == 2:
+                if pair in polymer:
+                    polymer[pair] += 1
+                else:
+                    polymer[pair] = 1
+
+        for row in file.readlines():
+            if '->' in row:
+                row = row.strip()
+                pair, insert = row.split('->')
+                rules[pair.strip()] = insert.strip()
+
+    return polymer, rules
