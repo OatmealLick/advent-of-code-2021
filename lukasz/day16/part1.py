@@ -1,6 +1,6 @@
 def main():
-    # filename = "input.txt"
-    filename = "input-sample.txt"
+    filename = "input.txt"
+    # filename = "input-sample.txt"
     with open(filename, "r") as f:
         line = f.read()
     print(f"hex {line}")
@@ -8,20 +8,16 @@ def main():
     print(f"raw binary {raw_binary}")
     binary = raw_binary[2:].zfill(len(line * 4))
     current = 0
-    version_sum = 0
     print(f"len {len(binary)} binary {binary}")
-    while current < len(binary):
-        current, version = analyze_packet(binary, current)
-        print(f"Current {current}, version {version}")
-        version_sum += version
-    print(version_sum)
+    version_sum, _ = analyze_packet(binary, current)
+    print(f"Version sum {version_sum}")
 
 
-def analyze_packet(binary, start, version_sum=0):
+def analyze_packet(binary, start):
     current = start
     print(f"Starting from {current}, {binary[current:]}")
     version = int(binary[current:current + 3], 2)
-    version_sum += version
+    version_sum = version
     type_id = int(binary[current + 3:current + 6], 2)
     current += 6
     print(f"Analyzing version {version}, type_id {type_id}")
@@ -41,22 +37,29 @@ def analyze_packet(binary, start, version_sum=0):
     else:
         length_type_id = binary[current]
         current += 1
-        print(f"Operator: Length type id {length_type_id}")
         if length_type_id == '0':
+            print(f"Operator: known total bits")
             total_bits = int(binary[current:current + 15], 2)
             current += 15
             bits = binary[current:current + total_bits]
             print(f"Bits {bits}")
-            current += total_bits
+            subpackets_bits = 0
+            while subpackets_bits < total_bits:
+                version, length = analyze_packet(binary, current)
+                version_sum += version
+                subpackets_bits += length
+                current += length
+
         elif length_type_id == '1':
+            print(f"Operator: known total subpackets")
             subpackets = int(binary[current:current + 11], 2)
             current += 11
-            bits = binary[current:current + subpackets * 11]
-            print(f"Bits {bits}")
-            current += subpackets * 11
+            for _ in range(subpackets):
+                version, length = analyze_packet(binary, current)
+                version_sum += version
+                current += length
         else:
             raise Exception("lel")
-    current += 4 - (current % 4)
     return version_sum, current - start
 
 
