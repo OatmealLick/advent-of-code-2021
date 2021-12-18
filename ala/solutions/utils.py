@@ -78,6 +78,19 @@ def read_map(path: str) -> np.ndarray:
     return np.array(map)
 
 
+def read_resized_map(map_: np.ndarray, resize: int = 5) -> np.ndarray:
+    new_map = []
+    for row_id in range(0, resize):
+        rows = []
+        for column_id in range(0, resize):
+            new_map_ = map_ + row_id + column_id
+            new_map_[new_map_ > 9] %= 9
+            rows.append(new_map_)
+        rows = np.concatenate(rows, axis=1)
+        new_map.append(rows)
+    return np.concatenate(new_map)
+
+
 def read_connections(path: str) -> List[Tuple[str, str]]:
     connections = []
     with open(path) as file:
