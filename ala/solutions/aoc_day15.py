@@ -38,14 +38,6 @@ class LowestRiskPathFinder:
     def find_the_lowest_risk(self):
         return self.find_the_lowest_path()
 
-    @staticmethod
-    def sum_risks(came_from, current_node):
-        risk = current_node.risk_f
-        while current_node in came_from.keys():
-            current_node = came_from[current_node]
-            risk += current_node.risk_f
-        return risk
-
     def find_the_lowest_path(self):
         opens = []
         came_from = {}
@@ -61,7 +53,6 @@ class LowestRiskPathFinder:
             c_coords = current_node.coords
 
             if current_node.coords == self.end_coords:
-                # return self.sum_risks(came_from, current_node)
                 return current_node.risk_f
 
             for diff in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
