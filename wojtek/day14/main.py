@@ -1,25 +1,28 @@
+from collections import defaultdict
+import math
+
 def polymerization(rules, polymer):
 
-    for n in range(40):
-        new_polymer_list = []
-        for i, c in enumerate(polymer):
-            slice = polymer[i:2 + i]
-            if slice in _rules.keys():
-                new_polymer_list.append(slice[0] + rules[slice])
-            else:
-                new_polymer_list.append(c)
+    pairs = defaultdict(int)
+    for i in range(len(polymer) - 1):
+        pairs[polymer[i:2 + i]] += 1
 
-        polymer = "".join(new_polymer_list)
+    for i in range(40):
+        new_pairs = defaultdict(int)
+        for key, value in pairs.items():
+            new_pairs[key[0] + rules[key]] += value
+            new_pairs[rules[key] + key[1]] += value
 
-    polymer_set = set(polymer)
-    polymer_count = {}
-    for p in polymer_set:
-        polymer_count[p] = polymer.count(p)
-    print(max(polymer_count.values()) - min(polymer_count.values()))
+        pairs = new_pairs
 
+    letter_count = defaultdict(int)
+    for key, value in pairs.items():
+        letter_count[key[0]] += value
+        letter_count[key[1]] += value
+    print(math.ceil(max(letter_count.values()) / 2) - math.ceil(min(letter_count.values()) / 2))
 
 if __name__ == "__main__":
-    with open('small.txt') as f:
+    with open('input.txt') as f:
         _polymer, _rules = f.read().strip().split("\n\n")
         _rules = [r.split(" -> ") for r in _rules.split("\n")]
         _rules = {key: value for key, value in _rules}
